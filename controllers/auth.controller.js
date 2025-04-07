@@ -7,23 +7,22 @@ const jwt = require("jsonwebtoken");
 
 
 let registerUser = errorHandler(async (req, res, next) => {
-    console.log(req.body);
-    let body = JSON.parse(req.body.body);
-    if (!body.email || !body.username || !body.password || !body.name) {
+    let body = req.body;
+    if (!body.email || !body.fullname || !body.password) {
       throw new Error("Ma'lumotlar to'liq emas");
     }
   
     let [existUser, existUserEmail] = await Promise.all([
-      User.find({ username: body.username }),
+      User.find({ fullname: body.fullname }),
       User.find({ email: body.email }),
     ]);
     if (existUser.length || existUserEmail.length) {
       throw new Error(`Boshqa ${existUser.length ? "username" : "email"} qo'y`);
     }
-
-    if (req.file) {body.image = '/uploads/users/' + req.file.filename}
-  
+    
     let user = await User.create(body);
+    console.log(user);
+    
     responscha(res, 200, {
       message: "Siz muvaffaqiyat ro'yxatdan o'tdingiz",
       user,
@@ -35,12 +34,14 @@ let registerUser = errorHandler(async (req, res, next) => {
   let loginUser = errorHandler(async (req, res, next) => {
     // console.log(req.cookies);
   
-    let { username, password } = req.body;
-    if (!username || !password)
+    let { fullname, password } = req.body;
+    console.log(fullname);
+    
+    if (!fullname || !password)
       throw new Error("Username yoki password berilmagan");
-    let user = await User.findOne({ username })
-      .select("password username email name role")
-      .exec();
+    let user = await User.findOne({fullname})
+    console.log(user);
+    
     if (!user) throw new Error("Siz oldin ro'yxat o'tmagansiz ");
   
   
